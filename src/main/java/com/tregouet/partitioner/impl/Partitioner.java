@@ -17,7 +17,6 @@ public class Partitioner<T> implements IPartitioner<T> {
 	public Partitioner(Set<T> set) {
 		list = new ArrayList<>(set);
 		partitionEncoding = new int[list.size()];
-		Arrays.fill(partitionEncoding, 1);
 	}
 	
 	/**
@@ -27,7 +26,6 @@ public class Partitioner<T> implements IPartitioner<T> {
 	private Partitioner(List<T> set) {
 		list = set;
 		partitionEncoding = new int[list.size()];
-		Arrays.fill(partitionEncoding, 1);
 	}
 
 	public List<List<List<T>>> getAllPartitions() {
@@ -35,7 +33,7 @@ public class Partitioner<T> implements IPartitioner<T> {
 		do {
 			List<List<T>> partition = new ArrayList<>();
 			boolean noMoreSubsets = false;
-			int subsetIdx = 1;
+			int subsetIdx = 0;
 			do {
 				List<T> nextSubset = new ArrayList<>();
 				for (int i = 0 ; i < partitionEncoding.length ; i++) {
@@ -50,19 +48,33 @@ public class Partitioner<T> implements IPartitioner<T> {
 					partition.add(nextSubset);
 					subsetIdx++;
 				}
-			} while (noMoreSubsets);			
+			} while (!noMoreSubsets);			
 		} while (advance());
 		return partitions;
 	}
 
-	public List<List<List<T>>> getSubsetsOfAllRecursivePartitions() {
+	public List<List<List<T>>> getAllRecursivePartitions() {
 		List<List<List<T>>> recursivePartitions = new ArrayList<>();
 		for (List<List<T>> partition : getAllPartitions()) {
-			List<List<List<List<T>>>> partitionsForEachSubset = new ArrayList<>();
-			for (List<T> subset : partition) {
-				List<List<List<T>>> subSetPartitions = new Partitioner<T>(subset).getSubsetsOfAllRecursivePartitions();
-				partitionsForEachSubset.add(subSetPartitions);
+			if (partition.size() == 1) {
+				//then the list partition is the list itself, so recursion on it leads to an infinite loop
+				recursivePartitions.add(partition);
 			}
+			else {
+				/*
+				 * LLLL   -	partitions for each subset
+				 * [L]LLL -	partitions for i[th] subset
+				 * L[L]LL -	j[th] partition for i[th] subset
+				 * LL[L]L -	k[th] subsubset of j[th] partition for i[th] subset
+				 * LLL[L] -	[th] element of k[th] subsubset of j[th] partition for i[th] subset  
+				 */
+				List<List<List<List<T>>>> partitionsForEachSubset = new ArrayList<>();
+				for (List<T> subset : partition) {
+					List<List<List<T>>> subSetPartitions = new Partitioner<T>(subset).getAllRecursivePartitions();
+					partitionsForEachSubset.add(subSetPartitions);
+				}
+			}
+			
 			for(List<List<List<T>>> forEachSubsetOnePartition : Lists.cartesianProduct(partitionsForEachSubset)) {
 				List<List<T>> recursivePartition = new ArrayList<>();
 				for (List<List<T>> partitionForOneSubset : forEachSubsetOnePartition) {
@@ -76,7 +88,7 @@ public class Partitioner<T> implements IPartitioner<T> {
 	}
 	
 	private boolean advance() {
-		setIndexOfTheRightmostIncrementableElement();
+		rightMostIncrementableIdx = getIndexOfTheRightmostIncrementableElement();
 		if (rightMostIncrementableIdx == -1)
 			return false;
 		else {
@@ -86,16 +98,15 @@ public class Partitioner<T> implements IPartitioner<T> {
 		}
 	}
 	
-	private void setIndexOfTheRightmostIncrementableElement() {
+	private int getIndexOfTheRightmostIncrementableElement() {
 		//the first element is never incrementable
 		for (int i = partitionEncoding.length - 1 ; i > 0 ; i--) {
 			int iValue = partitionEncoding[i];
 			if (partitionPrefixContains(iValue, i)) {
-				rightMostIncrementableIdx = i;
-				break;
+				return i;
 			}
 		}
-		rightMostIncrementableIdx = -1;
+		return -1;
 	}
 	
 	private boolean partitionPrefixContains(int value, int exclusiveUpperBound) {
@@ -108,7 +119,7 @@ public class Partitioner<T> implements IPartitioner<T> {
 	
 	private void setSuffixAtMinimalValue(int exclusiveLowerBound) {
 		for (int i = exclusiveLowerBound + 1 ; i < partitionEncoding.length ; i++) {
-			partitionEncoding[i] = 1;
+			partitionEncoding[i] = 0;
 		}
 	}
 
