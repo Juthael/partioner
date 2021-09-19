@@ -1,11 +1,17 @@
 package com.tregouet.partitioner;
 
+import java.util.List;
 import java.util.Set;
 
 public interface IPartitioner<T> {
 	
-	Set<Set<T>> getAllSubsets(Set<T> set);
+	/**
+	 * Lists returned instead of sets for better performance, and because no need of unicity checks;
+	 * @param set
+	 * @return
+	 */
+	List<List<List<T>>> getAllPartitions();
 	
-	Set<Set<T>> getAllSubsetsRecursively(Set<T> set);
+	List<List<List<T>>> getSubsetsOfAllRecursivePartitions();
 
 }
