@@ -32,22 +32,14 @@ public class PartitionerTest {
 	@Test
 	public void whenPartitionsRequestedThenExpectedReturned() {
 		List<List<List<Character>>> partitions = partitioner.getAllPartitions();
-		
+		/*
 		int idx = 1;
 		for (List<List<Character>> partition : partitions) {	
 			System.out.print("Partition " + Integer.toString(idx) + " : ");
 			System.out.println(partition.toString());
 			idx++;
 			}
-			
-		
-		idx = 1;
-		for (List<List<Character>> partition : partitionsObtainedByManualExecutionOfTheAlgorithm()) {	
-			System.out.print("Partition " + Integer.toString(idx) + " : ");
-			System.out.println(partition.toString());
-			idx++;
-		}
-		
+		*/
 		assertTrue(partitions.equals(partitionsObtainedByManualExecutionOfTheAlgorithm()));
 	}
 	
