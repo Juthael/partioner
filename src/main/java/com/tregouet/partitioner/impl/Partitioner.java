@@ -1,7 +1,6 @@
 package com.tregouet.partitioner.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -10,24 +9,28 @@ import com.tregouet.partitioner.IPartitioner;
 
 public class Partitioner<T> implements IPartitioner<T> {
 
-	List<T> list;
+	List<T> setAsList;
 	int[] partitionEncoding;
 	int rightMostIncrementableIdx;
 	
 	public Partitioner(Set<T> set) {
-		list = new ArrayList<>(set);
-		partitionEncoding = new int[list.size()];
+		setAsList = new ArrayList<>(set);
+		partitionEncoding = new int[setAsList.size()];
 	}
 	
 	/**
 	 * Unsafe : no unicity check
-	 * @param set
+	 * @param setAsList
 	 */
-	private Partitioner(List<T> set) {
-		list = set;
-		partitionEncoding = new int[list.size()];
+	private Partitioner(List<T> setAsList) {
+		this.setAsList = setAsList;
+		partitionEncoding = new int[setAsList.size()];
 	}
 
+	/**
+	 * Algorithm description found in Rici's answer to this question in stackoverflow.com : 
+	 * https://stackoverflow.com/questions/30893292/generate-all-partitions-of-a-set 
+	 */
 	public List<List<List<T>>> getAllPartitions() {
 		List<List<List<T>>> partitions = new ArrayList<>();
 		do {
@@ -38,7 +41,7 @@ public class Partitioner<T> implements IPartitioner<T> {
 				List<T> nextSubset = new ArrayList<>();
 				for (int i = 0 ; i < partitionEncoding.length ; i++) {
 					if (partitionEncoding[i] == subsetIdx)
-						nextSubset.add(list.get(i));
+						nextSubset.add(setAsList.get(i));
 				}
 				if (nextSubset.isEmpty()) {
 					partitions.add(partition);
@@ -53,38 +56,48 @@ public class Partitioner<T> implements IPartitioner<T> {
 		return partitions;
 	}
 
-	public List<List<List<T>>> getAllRecursivePartitions() {
-		List<List<List<T>>> recursivePartitions = new ArrayList<>();
-		for (List<List<T>> partition : getAllPartitions()) {
-			if (partition.size() == 1) {
-				//then the list partition is the list itself, so recursion on it leads to an infinite loop
-				recursivePartitions.add(partition);
-			}
-			else {
-				/*
-				 * LLLL   -	partitions for each subset
-				 * [L]LLL -	partitions for i[th] subset
-				 * L[L]LL -	j[th] partition for i[th] subset
-				 * LL[L]L -	k[th] subsubset of j[th] partition for i[th] subset
-				 * LLL[L] -	[th] element of k[th] subsubset of j[th] partition for i[th] subset  
-				 */
-				List<List<List<List<T>>>> partitionsForEachSubset = new ArrayList<>();
-				for (List<T> subset : partition) {
-					List<List<List<T>>> subSetPartitions = new Partitioner<T>(subset).getAllRecursivePartitions();
-					partitionsForEachSubset.add(subSetPartitions);
+	/**
+	 * https://en.wikipedia.org/wiki/Hierarchy_(mathematics)
+	 */
+	public List<List<List<T>>> getAllHierarchies() {
+		List<List<List<T>>> hierarchies = new ArrayList<>();
+		if (setAsList.size() == 1) {
+			//add the size 1 list of hierarchies of a size 1 set
+			List<List<T>> hierarchyOfSize1Set = new ArrayList<>();
+			hierarchyOfSize1Set.add(setAsList);
+			hierarchies.add(hierarchyOfSize1Set);
+		}
+		else {
+			for (List<List<T>> partition : getAllPartitions()) {
+				if (partition.size() > 1) {
+					/*
+					 * LLL[L] -	a sub-subset
+					 * LL[L]L -	a hierarchy of a subset
+					 * L[L]LL -	all hierarchies of a subset
+					 * [L]LLL -	for each subset of a partition, all hierarchies
+					 */
+					List<List<List<List<T>>>> hierarchiesOfEachSubset = new ArrayList<>();
+					for (List<T> subset : partition) {
+						List<List<List<T>>> hierarchiesOfCurrSubset = new Partitioner<T>(subset).getAllHierarchies();
+						hierarchiesOfEachSubset.add(hierarchiesOfCurrSubset);
+					}
+					/*
+					 * For any partition P of a set S (with P ≠ S), a hierarchy is S plus any 
+					 * element of the cartesian product of the lists of hierarchies of P's subsets. 
+					 */
+					for(List<List<List<T>>> forEachSubsetOneHierarchy : Lists.cartesianProduct(hierarchiesOfEachSubset)) {
+						List<List<T>> nextHierarchy = new ArrayList<>();
+						nextHierarchy.add(setAsList);
+						for (List<List<T>> hierarchyOfOneSubset : forEachSubsetOneHierarchy) {
+							for (List<T> subSubset : hierarchyOfOneSubset)
+								nextHierarchy.add(subSubset);
+						}
+						hierarchies.add(nextHierarchy);	
+					}
 				}
-			}
-			
-			for(List<List<List<T>>> forEachSubsetOnePartition : Lists.cartesianProduct(partitionsForEachSubset)) {
-				List<List<T>> recursivePartition = new ArrayList<>();
-				for (List<List<T>> partitionForOneSubset : forEachSubsetOnePartition) {
-					for (List<T> subsetOfASubset : partitionForOneSubset)
-						recursivePartition.add(subsetOfASubset);
-				}
-				recursivePartitions.add(recursivePartition);	
 			}
 		}
-		return recursivePartitions;
+		return hierarchies;
 	}
 	
 	private boolean advance() {
