@@ -28,7 +28,7 @@ public class Partitioner<T> implements IPartitioner<T> {
 	}
 
 	/**
-	 * Algorithm description found in Rici's answer to this question in stackoverflow.com : 
+	 * Based on Rici's answer to this question in stackoverflow.com : 
 	 * https://stackoverflow.com/questions/30893292/generate-all-partitions-of-a-set 
 	 */
 	@Override
