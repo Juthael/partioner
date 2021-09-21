@@ -12,6 +12,6 @@ public interface IPartitioner<T> {
 	 */
 	List<List<List<T>>> getAllPartitions();
 	
-	List<List<List<T>>> getAllHierarchies();
+	List<List<List<T>>> getAllSpanningHierarchies();
 
 }

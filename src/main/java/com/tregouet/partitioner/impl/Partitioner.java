@@ -31,6 +31,7 @@ public class Partitioner<T> implements IPartitioner<T> {
 	 * Algorithm description found in Rici's answer to this question in stackoverflow.com : 
 	 * https://stackoverflow.com/questions/30893292/generate-all-partitions-of-a-set 
 	 */
+	@Override
 	public List<List<List<T>>> getAllPartitions() {
 		List<List<List<T>>> partitions = new ArrayList<>();
 		do {
@@ -58,8 +59,11 @@ public class Partitioner<T> implements IPartitioner<T> {
 
 	/**
 	 * https://en.wikipedia.org/wiki/Hierarchy_(mathematics)
+	 * Spanning hierarchy : for n elements, contains (at least) the set of n elements and n sets 
+	 * of 1 elements.
 	 */
-	public List<List<List<T>>> getAllHierarchies() {
+	@Override
+	public List<List<List<T>>> getAllSpanningHierarchies() {
 		List<List<List<T>>> hierarchies = new ArrayList<>();
 		if (setAsList.size() == 1) {
 			//add the size 1 list of hierarchies of a size 1 set
@@ -78,16 +82,18 @@ public class Partitioner<T> implements IPartitioner<T> {
 					 */
 					List<List<List<List<T>>>> hierarchiesOfEachSubset = new ArrayList<>();
 					for (List<T> subset : partition) {
-						List<List<List<T>>> hierarchiesOfCurrSubset = new Partitioner<T>(subset).getAllHierarchies();
+						List<List<List<T>>> hierarchiesOfCurrSubset = 
+								new Partitioner<T>(subset).getAllSpanningHierarchies();
 						hierarchiesOfEachSubset.add(hierarchiesOfCurrSubset);
 					}
 					/*
-					 * For any partition P of a set S (with P ≠ S), a hierarchy is S plus any 
-					 * element of the cartesian product of the lists of hierarchies of P's subsets. 
+					 * For any partition P of a set S (with P ≠ S), a spanning hierarchy is S plus any 
+					 * element of the cartesian product of the lists of spanning hierarchies of P's subsets. 
 					 */
-					for(List<List<List<T>>> forEachSubsetOneHierarchy : Lists.cartesianProduct(hierarchiesOfEachSubset)) {
+					for(List<List<List<T>>> forEachSubsetOneHierarchy : 
+							Lists.cartesianProduct(hierarchiesOfEachSubset)) {
 						List<List<T>> nextHierarchy = new ArrayList<>();
-						nextHierarchy.add(setAsList);
+						nextHierarchy.add(this.setAsList);
 						for (List<List<T>> hierarchyOfOneSubset : forEachSubsetOneHierarchy) {
 							for (List<T> subSubset : hierarchyOfOneSubset)
 								nextHierarchy.add(subSubset);
@@ -98,7 +104,7 @@ public class Partitioner<T> implements IPartitioner<T> {
 			}
 		}
 		return hierarchies;
-	}
+	}	
 	
 	private boolean advance() {
 		rightMostIncrementableIdx = getIndexOfTheRightmostIncrementableElement();

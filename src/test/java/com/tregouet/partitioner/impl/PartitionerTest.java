@@ -17,20 +17,21 @@ import com.tregouet.partitioner.IPartitioner;
 public class PartitionerTest {
 
 	private static Set<Character> chars = new HashSet<>(Arrays.asList(new Character[] {'A', 'B', 'C', 'D'}));
+	private static Set<Character> moreChars = 
+			new HashSet<>(Arrays.asList(new Character[] {'A', 'B', 'C', 'D', 'E', 'F', 'G'}));
 	private static IPartitioner<Character> partitioner;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		
 	}
 
 	@Before
 	public void setUp() throws Exception {
-		partitioner = new Partitioner<>(chars);
 	}
 
 	@Test
 	public void whenPartitionsRequestedThenExpectedReturned() {
+		partitioner = new Partitioner<>(chars);
 		List<List<List<Character>>> partitions = partitioner.getAllPartitions();
 		/*
 		int idx = 1;
@@ -45,9 +46,18 @@ public class PartitionerTest {
 	
 	
 	@Test
-	public void whenHierarchiesReturnedThenReallyAreHierarchies() {
-		boolean hierarchiesIndeed = true;
-		List<List<List<Character>>> hierarchies = partitioner.getAllHierarchies();
+	public void whenHierarchiesReturnedThenReallyAreSpanningHierarchies() {
+		boolean properHierarchies = true;
+		boolean containsUnionAndAtoms = true;
+		boolean everyHierarchyIsGeneratedOnce = true;
+		
+		Character[] sortedSetArray = moreChars.toArray(new Character[moreChars.size()]);
+		Arrays.sort(sortedSetArray);
+		List<Character> sortedList = Arrays.asList(sortedSetArray);
+		partitioner = new Partitioner<>(moreChars);
+		
+		List<List<List<Character>>> hierarchies = partitioner.getAllSpanningHierarchies();
+		Set<List<List<Character>>> hierarchiesAsSet = new HashSet<>();
 		/*
 		int hierarchyIdx = 1;
 		for (List<List<Character>> hierarchy : hierarchies) {
@@ -57,6 +67,10 @@ public class PartitionerTest {
 		}
 		*/
 		for (List<List<Character>> hierarchy : hierarchies) {
+			if (!containsUnionAndAtoms(sortedList, hierarchy))
+				containsUnionAndAtoms = false;
+			if (!hierarchiesAsSet.add(hierarchy))
+				everyHierarchyIsGeneratedOnce = false;
 			for (int i = 0 ; i < hierarchy.size() - 1 ; i++) {
 				for (int j = i+1 ; j < hierarchy.size() ; j++) {
 					List<Character> subsetA = new ArrayList<>(hierarchy.get(i));
@@ -66,18 +80,12 @@ public class PartitionerTest {
 							|| !subsetA.removeAll(subsetB)){
 								//then ok
 							}
-					else hierarchiesIndeed = false;
+					else properHierarchies = false;
 				}
 			}
 
 		}	
-		assertTrue(hierarchiesIndeed);
-	}
-	
-	
-	@Test
-	public void forEveryPairOfSubsetsSuchAsOneIncludesTheOtherThenSomeHierarchyReturnedContainsBoth() {
-		
+		assertTrue(containsUnionAndAtoms && properHierarchies && everyHierarchyIsGeneratedOnce);
 	}
 	
 	private List<List<List<Character>>> partitionsObtainedByManualExecutionOfTheAlgorithm(){
@@ -167,6 +175,16 @@ public class PartitionerTest {
 		partitions.add(partition15);
 		
 		return partitions;
+	}
+	
+	private boolean containsUnionAndAtoms(List<Character> set, List<List<Character>> hierarchy) {
+		if (!hierarchy.contains(set))
+			return false;
+		for (Character character : set) {
+			if (!hierarchy.contains(Arrays.asList(new Character[] {character})))
+				return false;
+		}
+		return true;
 	}
 
 }
