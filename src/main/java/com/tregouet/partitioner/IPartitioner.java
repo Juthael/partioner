@@ -1,6 +1,7 @@
 package com.tregouet.partitioner;
 
 import java.util.List;
+import java.util.Set;
 
 public interface IPartitioner<T> {
 	
@@ -11,6 +12,10 @@ public interface IPartitioner<T> {
 	 */
 	List<List<List<T>>> getAllPartitions();
 	
-	List<List<List<T>>> getAllSpanningHierarchies();
+	public List<List<Set<T>>> getAllPartitionsAsListsOfSets();
+	
+	List<List<List<T>>> getAllSpanningHierarchiesAsListsOfLists();
+	
+	public List<List<Set<T>>> getAllSpanningHierarchies();
 
 }

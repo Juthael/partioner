@@ -1,6 +1,7 @@
 package com.tregouet.partitioner.impl;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -9,11 +10,13 @@ import com.tregouet.partitioner.IPartitioner;
 
 public class Partitioner<T> implements IPartitioner<T> {
 
+	Set<T> set;
 	List<T> setAsList;
 	int[] partitionEncoding;
 	int rightMostIncrementableIdx;
 	
 	public Partitioner(Set<T> set) {
+		this.set = set;
 		setAsList = new ArrayList<>(set);
 		partitionEncoding = new int[setAsList.size()];
 	}
@@ -56,6 +59,32 @@ public class Partitioner<T> implements IPartitioner<T> {
 		} while (advance());
 		return partitions;
 	}
+	
+	@Override
+	public List<List<Set<T>>> getAllPartitionsAsListsOfSets() {
+		List<List<Set<T>>> partitions = new ArrayList<>();
+		do {
+			List<Set<T>> partition = new ArrayList<>();
+			boolean noMoreSubsets = false;
+			int subsetIdx = 0;
+			do {
+				Set<T> nextSubset = new HashSet<>();
+				for (int i = 0 ; i < partitionEncoding.length ; i++) {
+					if (partitionEncoding[i] == subsetIdx)
+						nextSubset.add(setAsList.get(i));
+				}
+				if (nextSubset.isEmpty()) {
+					partitions.add(partition);
+					noMoreSubsets = true;
+				}
+				else {
+					partition.add(nextSubset);
+					subsetIdx++;
+				}
+			} while (!noMoreSubsets);			
+		} while (advance());
+		return partitions;
+	}	
 
 	/**
 	 * https://en.wikipedia.org/wiki/Hierarchy_(mathematics)
@@ -63,7 +92,7 @@ public class Partitioner<T> implements IPartitioner<T> {
 	 * of 1 elements.
 	 */
 	@Override
-	public List<List<List<T>>> getAllSpanningHierarchies() {
+	public List<List<List<T>>> getAllSpanningHierarchiesAsListsOfLists() {
 		List<List<List<T>>> hierarchies = new ArrayList<>();
 		if (setAsList.size() == 1) {
 			//add the size 1 list of hierarchies of a size 1 set
@@ -83,7 +112,7 @@ public class Partitioner<T> implements IPartitioner<T> {
 					List<List<List<List<T>>>> hierarchiesOfEachSubset = new ArrayList<>();
 					for (List<T> subset : partition) {
 						List<List<List<T>>> hierarchiesOfCurrSubset = 
-								new Partitioner<T>(subset).getAllSpanningHierarchies();
+								new Partitioner<T>(subset).getAllSpanningHierarchiesAsListsOfLists();
 						hierarchiesOfEachSubset.add(hierarchiesOfCurrSubset);
 					}
 					/*
@@ -104,7 +133,56 @@ public class Partitioner<T> implements IPartitioner<T> {
 			}
 		}
 		return hierarchies;
-	}	
+	}
+	
+	/**
+	 * https://en.wikipedia.org/wiki/Hierarchy_(mathematics)
+	 * Spanning hierarchy : for n elements, contains (at least) the set of n elements and n sets 
+	 * of 1 elements.
+	 */
+	@Override
+	public List<List<Set<T>>> getAllSpanningHierarchies() {
+		List<List<Set<T>>> hierarchies = new ArrayList<>();
+		if (setAsList.size() == 1) {
+			//add the size 1 list of hierarchies of a size 1 set
+			List<Set<T>> hierarchyOfSize1Set = new ArrayList<>();
+			hierarchyOfSize1Set.add(set);
+			hierarchies.add(hierarchyOfSize1Set);
+		}
+		else {
+			for (List<Set<T>> partition : getAllPartitionsAsListsOfSets()) {
+				if (partition.size() > 1) {
+					/*
+					 * LLL[S] -	a sub-subset
+					 * LL[L]S -	a hierarchy of a subset
+					 * L[L]LS -	all hierarchies of a subset
+					 * [L]LLS -	for each subset of a partition, all hierarchies
+					 */
+					List<List<List<Set<T>>>> hierarchiesOfEachSubset = new ArrayList<>();
+					for (Set<T> subset : partition) {
+						List<List<Set<T>>> hierarchiesOfCurrSubset = 
+								new Partitioner<T>(subset).getAllSpanningHierarchies();
+						hierarchiesOfEachSubset.add(hierarchiesOfCurrSubset);
+					}
+					/*
+					 * For any partition P of a set S (with P ≠ S), a spanning hierarchy is S plus any 
+					 * element of the cartesian product of the lists of spanning hierarchies of P's subsets. 
+					 */
+					for(List<List<Set<T>>> forEachSubsetOneHierarchy : 
+							Lists.cartesianProduct(hierarchiesOfEachSubset)) {
+						List<Set<T>> nextHierarchy = new ArrayList<>();
+						nextHierarchy.add(this.set);
+						for (List<Set<T>> hierarchyOfOneSubset : forEachSubsetOneHierarchy) {
+							for (Set<T> subSubset : hierarchyOfOneSubset)
+								nextHierarchy.add(subSubset);
+						}
+						hierarchies.add(nextHierarchy);	
+					}
+				}
+			}
+		}
+		return hierarchies;
+	}		
 	
 	private boolean advance() {
 		rightMostIncrementableIdx = getIndexOfTheRightmostIncrementableElement();

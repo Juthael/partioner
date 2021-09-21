@@ -56,7 +56,7 @@ public class PartitionerTest {
 		List<Character> sortedList = Arrays.asList(sortedSetArray);
 		partitioner = new Partitioner<>(moreChars);
 		
-		List<List<List<Character>>> hierarchies = partitioner.getAllSpanningHierarchies();
+		List<List<List<Character>>> hierarchies = partitioner.getAllSpanningHierarchiesAsListsOfLists();
 		Set<List<List<Character>>> hierarchiesAsSet = new HashSet<>();
 		/*
 		int hierarchyIdx = 1;
