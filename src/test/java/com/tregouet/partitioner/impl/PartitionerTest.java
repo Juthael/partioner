@@ -5,8 +5,10 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -46,7 +48,7 @@ public class PartitionerTest {
 	
 	
 	@Test
-	public void whenHierarchiesReturnedThenReallyAreSpanningHierarchies() {
+	public void whenHierarchiesRequestedThenReallyAreSpanningHierarchies() {
 		boolean properHierarchies = true;
 		boolean containsUnionAndAtoms = true;
 		boolean everyHierarchyIsGeneratedOnce = true;
@@ -75,17 +77,59 @@ public class PartitionerTest {
 				for (int j = i+1 ; j < hierarchy.size() ; j++) {
 					List<Character> subsetA = new ArrayList<>(hierarchy.get(i));
 					List<Character> subsetB = new ArrayList<>(hierarchy.get(j));
-					if (subsetA.containsAll(subsetB)
-							|| subsetB.containsAll(subsetA)
-							|| !subsetA.removeAll(subsetB)){
-								//then ok
-							}
-					else properHierarchies = false;
+					if (!eitherOneSubsetIncludesTheOtherOrTheirIntersectionIsEmpty(subsetA, subsetB)){
+						properHierarchies = false;
+					}
 				}
 			}
 
 		}	
 		assertTrue(containsUnionAndAtoms && properHierarchies && everyHierarchyIsGeneratedOnce);
+	}
+	
+	@Test
+	public void whenHierarchiesRequestedThenExpectedReturned() {
+		partitioner = new Partitioner<>(chars);
+		Set<Set<Set<Character>>> returned = getHierarchiesAsSets(partitioner.getAllSpanningHierarchiesAsListsOfLists());
+		Set<Set<Set<Character>>> expected = buildHierarchiesByDumbBruteForce(chars);
+		assertTrue(returned.equals(expected));
+	}
+	
+	private boolean eitherOneSubsetIncludesTheOtherOrTheirIntersectionIsEmpty(
+			List<Character> subsetA, List<Character> subsetB) {
+		if (subsetA.containsAll(subsetB)
+				|| subsetB.containsAll(subsetA)
+				|| !new ArrayList<>(subsetA).removeAll(subsetB))
+			return true;
+		return false;
+	}
+	
+	private boolean eitherOneSubsetIncludesTheOtherOrTheirIntersectionIsEmpty(
+			Set<Character> subsetA, Set<Character> subsetB) {
+		if (subsetA.containsAll(subsetB)
+				|| subsetB.containsAll(subsetA)
+				|| !new ArrayList<>(subsetA).removeAll(subsetB))
+			return true;
+		return false;
+	}	
+	
+	private boolean forEveryPairOfSubsetThenEitherOneIncludesTheOtherOrTheirIntersectionIsEmpty(
+			Set<Set<Character>> hierarchy) {
+		Iterator<Set<Character>> ite1 = hierarchy.iterator();
+		Set<Set<Character>> alreadyChecked = new HashSet<>();
+		while (ite1.hasNext()) {
+			Set<Character> subsetA = ite1.next();
+			Iterator<Set<Character>> ite2 = hierarchy.iterator();
+			while (ite2.hasNext()) {
+				Set<Character> subsetB = ite2.next();
+				if (!alreadyChecked.contains(subsetB)) {
+					if (!eitherOneSubsetIncludesTheOtherOrTheirIntersectionIsEmpty(subsetA, subsetB))
+						return false;
+				}	
+			}
+			alreadyChecked.add(subsetA);
+		}
+		return true;
 	}
 	
 	private List<List<List<Character>>> partitionsObtainedByManualExecutionOfTheAlgorithm(){
@@ -177,14 +221,73 @@ public class PartitionerTest {
 		return partitions;
 	}
 	
-	private boolean containsUnionAndAtoms(List<Character> set, List<List<Character>> hierarchy) {
-		if (!hierarchy.contains(set))
+	private boolean containsUnionAndAtoms(List<Character> unionOfAtoms, List<List<Character>> hierarchy) {
+		if (!hierarchy.contains(unionOfAtoms))
 			return false;
-		for (Character character : set) {
-			if (!hierarchy.contains(Arrays.asList(new Character[] {character})))
+		for (Character atom : unionOfAtoms) {
+			if (!hierarchy.contains(Arrays.asList(new Character[] {atom})))
 				return false;
 		}
 		return true;
+	}
+	
+	private boolean containsUnionAndAtoms(Set<Character> unionOfAtoms, Set<Set<Character>> hierarchy) {
+		if (!hierarchy.contains(unionOfAtoms))
+			return false;
+		for (Character atom : unionOfAtoms) {
+			if (!hierarchy.contains(new HashSet<>(Arrays.asList(new Character[] {atom}))))
+				return false;
+		}
+		return true;
+	}
+	
+	private Set<Set<Set<Character>>> getHierarchiesAsSets(List<List<List<Character>>> hierarchiesAsLists) {
+		Set<Set<Set<Character>>> hierarchies = new HashSet<>();
+		for (List<List<Character>> hierarchyAsList : hierarchiesAsLists) {
+			Set<Set<Character>> hierarchy = new HashSet<>();
+			for (List<Character> subsetAsList : hierarchyAsList)
+				hierarchy.add(new HashSet<>(subsetAsList));
+			hierarchies.add(hierarchy);
+		}
+		return hierarchies;
+	}
+	
+	private Set<Set<Set<Character>>> buildHierarchiesByDumbBruteForce(Set<Character> atoms) {
+		Set<Set<Set<Character>>> powerSetOfSubsets = buildPowerSetOfSubsets(buildPowerSetOfCharacters(atoms));
+		Set<Set<Set<Character>>> hierarchies =  powerSetOfSubsets.stream()
+				.filter(h -> containsUnionAndAtoms(atoms, h) 
+						&& forEveryPairOfSubsetThenEitherOneIncludesTheOtherOrTheirIntersectionIsEmpty(h))
+				.collect(Collectors.toSet());
+		return hierarchies;
+	}
+	
+	private Set<Set<Set<Character>>> buildPowerSetOfSubsets(Set<Set<Character>> powerSet) {
+		List<Set<Character>> subsetList = new ArrayList<>(powerSet);
+		subsetList.remove(new HashSet<Character>());
+		Set<Set<Set<Character>>> powerSetOfSubsets = new HashSet<>();
+		for (int i = 0 ; i < (1 << subsetList.size()) ; i++) {
+			Set<Set<Character>> setOfSubsets = new HashSet<>();
+			for (int j = 0 ; j < subsetList.size() ; j++) {
+				if (((1 << j) & i) > 0)
+					setOfSubsets.add(subsetList.get(j));
+			}
+			powerSetOfSubsets.add(setOfSubsets);
+		}
+		return powerSetOfSubsets;
+	}
+	
+	private Set<Set<Character>> buildPowerSetOfCharacters(Set<Character> characters) {
+		List<Character> charList = new ArrayList<>(characters);
+	    Set<Set<Character>> powerSet = new HashSet<Set<Character>>();
+	    for (int i = 0; i < (1 << charList.size()); i++) {
+	    	Set<Character> subset = new HashSet<Character>();
+	        for (int j = 0; j < charList.size(); j++) {
+	            if(((1 << j) & i) > 0)
+	            	subset.add(charList.get(j));
+	        }
+	        powerSet.add(subset);
+	    }
+	    return powerSet;
 	}
 
 }
