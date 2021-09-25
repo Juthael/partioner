@@ -49,8 +49,8 @@ public class PartitionerTest {
 	
 	@Test
 	public void whenHierarchiesRequestedThenReallyAreSpanningHierarchies() {
+		boolean spanning = true;
 		boolean properHierarchies = true;
-		boolean containsUnionAndAtoms = true;
 		boolean everyHierarchyIsGeneratedOnce = true;
 		
 		Character[] sortedSetArray = moreChars.toArray(new Character[moreChars.size()]);
@@ -70,7 +70,7 @@ public class PartitionerTest {
 		*/
 		for (List<List<Character>> hierarchy : hierarchies) {
 			if (!containsUnionAndAtoms(sortedList, hierarchy))
-				containsUnionAndAtoms = false;
+				spanning = false;
 			if (!hierarchiesAsSet.add(hierarchy))
 				everyHierarchyIsGeneratedOnce = false;
 			for (int i = 0 ; i < hierarchy.size() - 1 ; i++) {
@@ -84,7 +84,7 @@ public class PartitionerTest {
 			}
 
 		}	
-		assertTrue(containsUnionAndAtoms && properHierarchies && everyHierarchyIsGeneratedOnce);
+		assertTrue(spanning && properHierarchies && everyHierarchyIsGeneratedOnce);
 	}
 	
 	@Test

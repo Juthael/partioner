@@ -10,10 +10,10 @@ import com.tregouet.partitioner.IPartitioner;
 
 public class Partitioner<T> implements IPartitioner<T> {
 
-	Set<T> set;
-	List<T> setAsList;
-	int[] partitionEncoding;
-	int rightMostIncrementableIdx;
+	protected final Set<T> set;
+	protected final List<T> setAsList;
+	protected final int[] partitionEncoding;
+	private int rightMostIncrementableIdx;
 	
 	public Partitioner(Set<T> set) {
 		this.set = set;
@@ -25,7 +25,8 @@ public class Partitioner<T> implements IPartitioner<T> {
 	 * Unsafe : no unicity check
 	 * @param setAsList
 	 */
-	private Partitioner(List<T> setAsList) {
+	protected Partitioner(List<T> setAsList) {
+		set = new HashSet<>(setAsList);
 		this.setAsList = setAsList;
 		partitionEncoding = new int[setAsList.size()];
 	}
@@ -112,7 +113,7 @@ public class Partitioner<T> implements IPartitioner<T> {
 					List<List<List<List<T>>>> hierarchiesOfEachSubset = new ArrayList<>();
 					for (List<T> subset : partition) {
 						List<List<List<T>>> hierarchiesOfCurrSubset = 
-								new Partitioner<T>(subset).getAllSpanningHierarchiesAsListsOfLists();
+								getNewPartitioner(setAsList).getAllSpanningHierarchiesAsListsOfLists();
 						hierarchiesOfEachSubset.add(hierarchiesOfCurrSubset);
 					}
 					/*
@@ -161,7 +162,7 @@ public class Partitioner<T> implements IPartitioner<T> {
 					List<List<List<Set<T>>>> hierarchiesOfEachSubset = new ArrayList<>();
 					for (Set<T> subset : partition) {
 						List<List<Set<T>>> hierarchiesOfCurrSubset = 
-								new Partitioner<T>(subset).getAllSpanningHierarchies();
+								getNewPartitioner(subset).getAllSpanningHierarchies();
 						hierarchiesOfEachSubset.add(hierarchiesOfCurrSubset);
 					}
 					/*
@@ -184,7 +185,7 @@ public class Partitioner<T> implements IPartitioner<T> {
 		return hierarchies;
 	}		
 	
-	private boolean advance() {
+	protected boolean advance() {
 		rightMostIncrementableIdx = getIndexOfTheRightmostIncrementableElement();
 		if (rightMostIncrementableIdx == -1)
 			return false;
@@ -219,5 +220,13 @@ public class Partitioner<T> implements IPartitioner<T> {
 			partitionEncoding[i] = 0;
 		}
 	}
+	
+	protected IPartitioner<T> getNewPartitioner(Set<T> set) {
+		return new Partitioner<T>(set);
+	}
+	
+	protected IPartitioner<T> getNewPartitioner(List<T> setAsList) {
+		return new Partitioner<T>(setAsList);
+	}	
 
 }
