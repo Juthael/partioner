@@ -113,7 +113,7 @@ public class Partitioner<T> implements IPartitioner<T> {
 					List<List<List<List<T>>>> hierarchiesOfEachSubset = new ArrayList<>();
 					for (List<T> subset : partition) {
 						List<List<List<T>>> hierarchiesOfCurrSubset = 
-								getNewPartitioner(setAsList).getAllSpanningHierarchiesAsListsOfLists();
+								getNewPartitioner(subset).getAllSpanningHierarchiesAsListsOfLists();
 						hierarchiesOfEachSubset.add(hierarchiesOfCurrSubset);
 					}
 					/*
