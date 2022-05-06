@@ -11,14 +11,14 @@ import com.tregouet.partitioner.IPartitioner;
 public class Partitioner<T> implements IPartitioner<T> {
 
 	protected final Set<T> set;
-	protected final List<T> setAsList;
+	protected final List<T> order;
 	protected final int[] partitionEncoding;
 	private int rightMostIncrementableIdx;
 	
 	public Partitioner(Set<T> set) {
 		this.set = set;
-		setAsList = new ArrayList<>(set);
-		partitionEncoding = new int[setAsList.size()];
+		order = new ArrayList<>(set);
+		partitionEncoding = new int[order.size()];
 	}
 	
 	/**
@@ -27,7 +27,7 @@ public class Partitioner<T> implements IPartitioner<T> {
 	 */
 	protected Partitioner(List<T> setAsList) {
 		set = new HashSet<>(setAsList);
-		this.setAsList = setAsList;
+		this.order = setAsList;
 		partitionEncoding = new int[setAsList.size()];
 	}
 
@@ -46,7 +46,7 @@ public class Partitioner<T> implements IPartitioner<T> {
 				List<T> nextSubset = new ArrayList<>();
 				for (int i = 0 ; i < partitionEncoding.length ; i++) {
 					if (partitionEncoding[i] == subsetIdx)
-						nextSubset.add(setAsList.get(i));
+						nextSubset.add(order.get(i));
 				}
 				if (nextSubset.isEmpty()) {
 					partitions.add(partition);
@@ -72,7 +72,7 @@ public class Partitioner<T> implements IPartitioner<T> {
 				Set<T> nextSubset = new HashSet<>();
 				for (int i = 0 ; i < partitionEncoding.length ; i++) {
 					if (partitionEncoding[i] == subsetIdx)
-						nextSubset.add(setAsList.get(i));
+						nextSubset.add(order.get(i));
 				}
 				if (nextSubset.isEmpty()) {
 					partitions.add(partition);
@@ -95,10 +95,10 @@ public class Partitioner<T> implements IPartitioner<T> {
 	@Override
 	public List<List<List<T>>> getAllSpanningHierarchiesAsListsOfLists() {
 		List<List<List<T>>> hierarchies = new ArrayList<>();
-		if (setAsList.size() == 1) {
+		if (order.size() == 1) {
 			//add the size 1 list of hierarchies of a size 1 set
 			List<List<T>> hierarchyOfSize1Set = new ArrayList<>();
-			hierarchyOfSize1Set.add(setAsList);
+			hierarchyOfSize1Set.add(order);
 			hierarchies.add(hierarchyOfSize1Set);
 		}
 		else {
@@ -123,7 +123,7 @@ public class Partitioner<T> implements IPartitioner<T> {
 					for(List<List<List<T>>> forEachSubsetOneHierarchy : 
 							Lists.cartesianProduct(hierarchiesOfEachSubset)) {
 						List<List<T>> nextHierarchy = new ArrayList<>();
-						nextHierarchy.add(this.setAsList);
+						nextHierarchy.add(this.order);
 						for (List<List<T>> hierarchyOfOneSubset : forEachSubsetOneHierarchy) {
 							for (List<T> subSubset : hierarchyOfOneSubset)
 								nextHierarchy.add(subSubset);
@@ -144,7 +144,7 @@ public class Partitioner<T> implements IPartitioner<T> {
 	@Override
 	public List<List<Set<T>>> getAllSpanningHierarchies() {
 		List<List<Set<T>>> hierarchies = new ArrayList<>();
-		if (setAsList.size() == 1) {
+		if (order.size() == 1) {
 			//add the size 1 list of hierarchies of a size 1 set
 			List<Set<T>> hierarchyOfSize1Set = new ArrayList<>();
 			hierarchyOfSize1Set.add(set);
@@ -196,7 +196,7 @@ public class Partitioner<T> implements IPartitioner<T> {
 		}
 	}
 	
-	private int getIndexOfTheRightmostIncrementableElement() {
+	protected int getIndexOfTheRightmostIncrementableElement() {
 		//the first element is never incrementable
 		for (int i = partitionEncoding.length - 1 ; i > 0 ; i--) {
 			int iValue = partitionEncoding[i];
@@ -207,8 +207,8 @@ public class Partitioner<T> implements IPartitioner<T> {
 		return -1;
 	}
 	
-	private boolean partitionPrefixContains(int value, int exclusiveUpperBound) {
-		for (int i = 0 ; i < exclusiveUpperBound ; i++) {
+	protected boolean partitionPrefixContains(int value, int strictUpperBound) {
+		for (int i = 0 ; i < strictUpperBound ; i++) {
 			if (partitionEncoding[i] == value)
 				return true;
 		}
