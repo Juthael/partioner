@@ -13,7 +13,7 @@ public class ConstrainedPartitioner<T> extends Partitioner<T> implements IPartit
 
 	private List<List<T>> authorizedSubsets = new ArrayList<>();
 	private Integer maxNbOfSubsets;
-	
+
 	public ConstrainedPartitioner(Set<T> set, Set<Set<T>> authorizedSubsets, Integer maxNbOfSubsets) {
 		super(set);
 		Comparator<T> sorter = ((t1, t2) -> order.indexOf(t1) - order.indexOf(t2));
@@ -28,21 +28,21 @@ public class ConstrainedPartitioner<T> extends Partitioner<T> implements IPartit
 			this.maxNbOfSubsets = maxNbOfSubsets;
 		}
 	}
-	
+
 	private ConstrainedPartitioner(Set<T> set, List<List<T>> authorizedSubsets, Integer maxNbOfSubsets) {
 		super(set);
 		this.authorizedSubsets = authorizedSubsets;
 		this.maxNbOfSubsets = maxNbOfSubsets;
-	}	
-	
+	}
+
 	private ConstrainedPartitioner(List<T> set, List<List<T>> authorizedSubsets, Integer maxNbOfSubsets) {
 		super(set);
 		this.authorizedSubsets = authorizedSubsets;
 		this.maxNbOfSubsets = maxNbOfSubsets;
-	}	
-	
+	}
+
 	@Override
-	public List<List<List<T>>> getAllPartitions(){
+	public List<List<List<T>>> getAllPartitions() {
 		List<List<List<T>>> partitions = new ArrayList<>();
 		boolean partitionIsValid;
 		List<List<T>> partition;
@@ -55,7 +55,7 @@ public class ConstrainedPartitioner<T> extends Partitioner<T> implements IPartit
 			do {
 				partitionIsValid = true;
 				List<T> nextSubset = new ArrayList<>();
-				for (int i = 0 ; i < partitionEncoding.length ; i++) {
+				for (int i = 0; i < partitionEncoding.length; i++) {
 					if (partitionEncoding[i] == subsetIdx)
 						nextSubset.add(order.get(i));
 				}
@@ -65,19 +65,18 @@ public class ConstrainedPartitioner<T> extends Partitioner<T> implements IPartit
 					if (nextSubset.isEmpty()) {
 						partitions.add(partition);
 						noMoreSubsets = true;
-					}
-					else {
+					} else {
 						partition.add(nextSubset);
 						subsetIdx++;
 					}
 				}
-			} while (!noMoreSubsets && partitionIsValid);			
+			} while (!noMoreSubsets && partitionIsValid);
 		} while (advance());
 		return partitions;
 	}
-	
+
 	@Override
-	public List<List<Set<T>>> getAllPartitionsAsListsOfSets(){
+	public List<List<Set<T>>> getAllPartitionsAsListsOfSets() {
 		List<List<Set<T>>> partitions = new ArrayList<>();
 		boolean partitionIsValid;
 		List<Set<T>> partition;
@@ -90,7 +89,7 @@ public class ConstrainedPartitioner<T> extends Partitioner<T> implements IPartit
 			do {
 				partitionIsValid = true;
 				List<T> nextSubset = new ArrayList<>();
-				for (int i = 0 ; i < partitionEncoding.length ; i++) {
+				for (int i = 0; i < partitionEncoding.length; i++) {
 					if (partitionEncoding[i] == subsetIdx)
 						nextSubset.add(order.get(i));
 				}
@@ -100,17 +99,16 @@ public class ConstrainedPartitioner<T> extends Partitioner<T> implements IPartit
 					if (nextSubset.isEmpty()) {
 						partitions.add(partition);
 						noMoreSubsets = true;
-					}
-					else {
+					} else {
 						partition.add(new HashSet<>(nextSubset));
 						subsetIdx++;
 					}
 				}
-			} while (!noMoreSubsets && partitionIsValid);			
+			} while (!noMoreSubsets && partitionIsValid);
 		} while (advance());
 		return partitions;
 	}
-	
+
 	@Override
 	protected IPartitioner<T> getNewPartitioner(Set<T> set) {
 		List<List<T>> authorizedSubsets = new ArrayList<>();
@@ -118,9 +116,9 @@ public class ConstrainedPartitioner<T> extends Partitioner<T> implements IPartit
 			if (set.containsAll(authorized))
 				authorizedSubsets.add(authorized);
 		}
-		return new ConstrainedPartitioner<T>(order, authorizedSubsets, maxNbOfSubsets);
+		return new ConstrainedPartitioner<>(order, authorizedSubsets, maxNbOfSubsets);
 	}
-	
+
 	@Override
 	protected IPartitioner<T> getNewPartitioner(List<T> setAsList) {
 		List<List<T>> authorizedSubsets = new ArrayList<>();
@@ -128,21 +126,21 @@ public class ConstrainedPartitioner<T> extends Partitioner<T> implements IPartit
 			if (setAsList.containsAll(authorized))
 				authorizedSubsets.add(authorized);
 		}
-		return new ConstrainedPartitioner<T>(setAsList, authorizedSubsets, maxNbOfSubsets);
-	}	
-	
+		return new ConstrainedPartitioner<>(setAsList, authorizedSubsets, maxNbOfSubsets);
+	}
+
 	@Override
 	protected int getIndexOfTheRightmostIncrementableElement() {
 		if (maxNbOfSubsets == null)
 			return super.getIndexOfTheRightmostIncrementableElement();
-		//the first element is never incrementable
-		for (int i = partitionEncoding.length - 1 ; i > 0 ; i--) {
+		// the first element is never incrementable
+		for (int i = partitionEncoding.length - 1; i > 0; i--) {
 			int iValue = partitionEncoding[i];
 			if (iValue < maxNbOfSubsets && partitionPrefixContains(iValue, i)) {
 				return i;
 			}
 		}
 		return -1;
-	}	
+	}
 
 }

@@ -15,9 +15,9 @@ import org.junit.Test;
 import com.google.common.collect.Sets;
 
 public class ConstrainedPartitionerTest {
-	
-	private static Set<Character> chars = 
-			new HashSet<>(Arrays.asList(new Character[] {'A', 'B', 'C', 'D', 'E', 'F', 'G'}));
+
+	private static Set<Character> chars = new HashSet<>(
+			Arrays.asList(new Character[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G' }));
 	private static Set<Set<Character>> powerSet;
 	private static Set<Set<Character>> forbiddenSubsets = new HashSet<>();
 	private static Set<Set<Character>> authorizedSubsets;
@@ -27,8 +27,8 @@ public class ConstrainedPartitionerTest {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		forbiddenSubsets.add((new HashSet<>(Arrays.asList(new Character[] {'A', 'B', 'C'}))));
-		forbiddenSubsets.add(new HashSet<>(Arrays.asList(new Character[] {'D', 'E'})));
+		forbiddenSubsets.add((new HashSet<>(Arrays.asList(new Character[] { 'A', 'B', 'C' }))));
+		forbiddenSubsets.add(new HashSet<>(Arrays.asList(new Character[] { 'D', 'E' })));
 		powerSet = Sets.powerSet(chars);
 		authorizedSubsets = new HashSet<>(Sets.difference(powerSet, forbiddenSubsets));
 		partitioner = new Partitioner<>(chars);
@@ -37,20 +37,22 @@ public class ConstrainedPartitionerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		
+
 	}
 
 	@Test
 	public void whenConstrainedPartitionsReturnedThenSubsetOfPartitions() {
-		ConstrainedPartitioner<Character> constrainedPartitioner = new ConstrainedPartitioner<>(chars, authorizedSubsets, maxSize);
+		ConstrainedPartitioner<Character> constrainedPartitioner = new ConstrainedPartitioner<>(chars,
+				authorizedSubsets, maxSize);
 		List<List<List<Character>>> constrainedPartitions = constrainedPartitioner.getAllPartitions();
 		assertTrue(!constrainedPartitions.isEmpty() && allPartitions.containsAll(constrainedPartitions));
 	}
-	
+
 	@Test
 	public void whenPartitionNotContainedInSubsetConstrainedPartitionThenContainsForbiddenSubset() {
 		boolean asExpected = true;
-		ConstrainedPartitioner<Character> constrainedPartitioner = new ConstrainedPartitioner<>(chars, authorizedSubsets, null);
+		ConstrainedPartitioner<Character> constrainedPartitioner = new ConstrainedPartitioner<>(chars,
+				authorizedSubsets, null);
 		List<List<List<Character>>> constrainedPartitions = constrainedPartitioner.getAllPartitions();
 		List<List<List<Character>>> rejectedPartitions = new ArrayList<>();
 		for (List<List<Character>> partition : allPartitions)
@@ -63,11 +65,12 @@ public class ConstrainedPartitionerTest {
 		}
 		assertTrue(!rejectedPartitions.isEmpty() && asExpected);
 	}
-	
+
 	@Test
 	public void whenPartitionNotContainedInSizeConstrainedPartitionThenHasForbiddenSize() {
 		boolean asExpected = true;
-		ConstrainedPartitioner<Character> constrainedPartitioner = new ConstrainedPartitioner<>(chars, powerSet, maxSize);
+		ConstrainedPartitioner<Character> constrainedPartitioner = new ConstrainedPartitioner<>(chars, powerSet,
+				maxSize);
 		List<List<List<Character>>> constrainedPartitions = constrainedPartitioner.getAllPartitions();
 		List<List<List<Character>>> rejectedPartitions = new ArrayList<>();
 		for (List<List<Character>> partition : allPartitions)
@@ -77,17 +80,17 @@ public class ConstrainedPartitionerTest {
 			if (rejected.size() <= maxSize)
 				asExpected = false;
 			/*
-			System.out.println(rejected);
-			*/
+			 * System.out.println(rejected);
+			 */
 		}
 		assertTrue(!rejectedPartitions.isEmpty() && asExpected);
 	}
-	
+
 	@Test
 	public void whenPartitionNotContainedInConstrainedPartitionThenHasEitherForbiddenSubsetOrForbiddenSize() {
 		boolean asExpected = true;
-		ConstrainedPartitioner<Character> constrainedPartitioner = 
-				new ConstrainedPartitioner<>(chars, authorizedSubsets, maxSize);
+		ConstrainedPartitioner<Character> constrainedPartitioner = new ConstrainedPartitioner<>(chars,
+				authorizedSubsets, maxSize);
 		List<List<List<Character>>> constrainedPartitions = constrainedPartitioner.getAllPartitions();
 		List<List<List<Character>>> rejectedPartitions = new ArrayList<>();
 		for (List<List<Character>> partition : allPartitions)
@@ -100,12 +103,12 @@ public class ConstrainedPartitionerTest {
 					asExpected = false;
 			}
 			/*
-			System.out.println(rejected);
-			*/
+			 * System.out.println(rejected);
+			 */
 		}
 		assertTrue(!rejectedPartitions.isEmpty() && asExpected);
-	}		
-	
+	}
+
 	private Set<Set<Character>> asSets(List<List<Character>> lists) {
 		Set<Set<Character>> setOfSets = new HashSet<>();
 		for (List<Character> charList : lists) {
@@ -114,7 +117,5 @@ public class ConstrainedPartitionerTest {
 		}
 		return setOfSets;
 	}
-	
-	
 
 }

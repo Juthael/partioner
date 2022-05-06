@@ -18,11 +18,11 @@ import com.tregouet.partitioner.IPartitioner;
 
 public class PartitionerTest {
 
-	private static Set<Character> chars = new HashSet<>(Arrays.asList(new Character[] {'A', 'B', 'C', 'D'}));
-	private static Set<Character> moreChars = 
-			new HashSet<>(Arrays.asList(new Character[] {'A', 'B', 'C', 'D', 'E', 'F', 'G'}));
+	private static Set<Character> chars = new HashSet<>(Arrays.asList(new Character[] { 'A', 'B', 'C', 'D' }));
+	private static Set<Character> moreChars = new HashSet<>(
+			Arrays.asList(new Character[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G' }));
 	private static IPartitioner<Character> partitioner;
-	
+
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 	}
@@ -36,57 +36,50 @@ public class PartitionerTest {
 		partitioner = new Partitioner<>(chars);
 		List<List<List<Character>>> partitions = partitioner.getAllPartitions();
 		/*
-		int idx = 1;
-		for (List<List<Character>> partition : partitions) {	
-			System.out.print("Partition " + Integer.toString(idx) + " : ");
-			System.out.println(partition.toString());
-			idx++;
-			}
-		*/
+		 * int idx = 1; for (List<List<Character>> partition : partitions) {
+		 * System.out.print("Partition " + Integer.toString(idx) + " : ");
+		 * System.out.println(partition.toString()); idx++; }
+		 */
 		assertTrue(partitions.equals(partitionsObtainedByManualExecutionOfTheAlgorithm()));
 	}
-	
-	
+
 	@Test
 	public void whenHierarchiesRequestedThenReallyAreSpanningHierarchies() {
 		boolean spanning = true;
 		boolean properHierarchies = true;
 		boolean everyHierarchyIsGeneratedOnce = true;
-		
+
 		Character[] sortedSetArray = moreChars.toArray(new Character[moreChars.size()]);
 		Arrays.sort(sortedSetArray);
 		List<Character> sortedList = Arrays.asList(sortedSetArray);
 		partitioner = new Partitioner<>(moreChars);
-		
+
 		List<List<List<Character>>> hierarchies = partitioner.getAllSpanningHierarchiesAsListsOfLists();
 		Set<List<List<Character>>> hierarchiesAsSet = new HashSet<>();
 		/*
-		int hierarchyIdx = 1;
-		for (List<List<Character>> hierarchy : hierarchies) {
-			System.out.print("Hierarchy " + Integer.toString(hierarchyIdx) + " : ");
-			System.out.println(hierarchy.toString());
-			hierarchyIdx++;
-		}
-		*/
+		 * int hierarchyIdx = 1; for (List<List<Character>> hierarchy : hierarchies) {
+		 * System.out.print("Hierarchy " + Integer.toString(hierarchyIdx) + " : ");
+		 * System.out.println(hierarchy.toString()); hierarchyIdx++; }
+		 */
 		for (List<List<Character>> hierarchy : hierarchies) {
 			if (!containsUnionAndAtoms(sortedList, hierarchy))
 				spanning = false;
 			if (!hierarchiesAsSet.add(hierarchy))
 				everyHierarchyIsGeneratedOnce = false;
-			for (int i = 0 ; i < hierarchy.size() - 1 ; i++) {
-				for (int j = i+1 ; j < hierarchy.size() ; j++) {
+			for (int i = 0; i < hierarchy.size() - 1; i++) {
+				for (int j = i + 1; j < hierarchy.size(); j++) {
 					List<Character> subsetA = new ArrayList<>(hierarchy.get(i));
 					List<Character> subsetB = new ArrayList<>(hierarchy.get(j));
-					if (!eitherOneSubsetIncludesTheOtherOrTheirIntersectionIsEmpty(subsetA, subsetB)){
+					if (!eitherOneSubsetIncludesTheOtherOrTheirIntersectionIsEmpty(subsetA, subsetB)) {
 						properHierarchies = false;
 					}
 				}
 			}
 
-		}	
+		}
 		assertTrue(spanning && properHierarchies && everyHierarchyIsGeneratedOnce);
 	}
-	
+
 	@Test
 	public void whenHierarchiesRequestedThenExpectedReturned() {
 		partitioner = new Partitioner<>(chars);
@@ -94,25 +87,23 @@ public class PartitionerTest {
 		Set<Set<Set<Character>>> expected = buildHierarchiesByDumbBruteForce(chars);
 		assertTrue(returned.equals(expected));
 	}
-	
-	private boolean eitherOneSubsetIncludesTheOtherOrTheirIntersectionIsEmpty(
-			List<Character> subsetA, List<Character> subsetB) {
-		if (subsetA.containsAll(subsetB)
-				|| subsetB.containsAll(subsetA)
+
+	private boolean eitherOneSubsetIncludesTheOtherOrTheirIntersectionIsEmpty(List<Character> subsetA,
+			List<Character> subsetB) {
+		if (subsetA.containsAll(subsetB) || subsetB.containsAll(subsetA)
 				|| !new ArrayList<>(subsetA).removeAll(subsetB))
 			return true;
 		return false;
 	}
-	
-	private boolean eitherOneSubsetIncludesTheOtherOrTheirIntersectionIsEmpty(
-			Set<Character> subsetA, Set<Character> subsetB) {
-		if (subsetA.containsAll(subsetB)
-				|| subsetB.containsAll(subsetA)
+
+	private boolean eitherOneSubsetIncludesTheOtherOrTheirIntersectionIsEmpty(Set<Character> subsetA,
+			Set<Character> subsetB) {
+		if (subsetA.containsAll(subsetB) || subsetB.containsAll(subsetA)
 				|| !new ArrayList<>(subsetA).removeAll(subsetB))
 			return true;
 		return false;
-	}	
-	
+	}
+
 	private boolean forEveryPairOfSubsetThenEitherOneIncludesTheOtherOrTheirIntersectionIsEmpty(
 			Set<Set<Character>> hierarchy) {
 		Iterator<Set<Character>> ite1 = hierarchy.iterator();
@@ -125,14 +116,14 @@ public class PartitionerTest {
 				if (!alreadyChecked.contains(subsetB)) {
 					if (!eitherOneSubsetIncludesTheOtherOrTheirIntersectionIsEmpty(subsetA, subsetB))
 						return false;
-				}	
+				}
 			}
 			alreadyChecked.add(subsetA);
 		}
 		return true;
 	}
-	
-	private List<List<List<Character>>> partitionsObtainedByManualExecutionOfTheAlgorithm(){
+
+	private List<List<List<Character>>> partitionsObtainedByManualExecutionOfTheAlgorithm() {
 		List<List<List<Character>>> partitions = new ArrayList<>();
 		List<List<Character>> partition1 = new ArrayList<>();
 		List<List<Character>> partition2 = new ArrayList<>();
@@ -149,59 +140,59 @@ public class PartitionerTest {
 		List<List<Character>> partition13 = new ArrayList<>();
 		List<List<Character>> partition14 = new ArrayList<>();
 		List<List<Character>> partition15 = new ArrayList<>();
-		
-		partition1.add(new ArrayList<>(Arrays.asList(new Character[] {'A', 'B', 'C', 'D'})));
-		
-		partition2.add(new ArrayList<>(Arrays.asList(new Character[] {'A', 'B', 'C'})));
-		partition2.add(new ArrayList<>(Arrays.asList(new Character[] {'D'})));
-		
-		partition3.add(new ArrayList<>(Arrays.asList(new Character[] {'A', 'B', 'D'})));
-		partition3.add(new ArrayList<>(Arrays.asList(new Character[] {'C'})));
-		
-		partition4.add(new ArrayList<>(Arrays.asList(new Character[] {'A', 'B'})));
-		partition4.add(new ArrayList<>(Arrays.asList(new Character[] {'C', 'D'})));
-		
-		partition5.add(new ArrayList<>(Arrays.asList(new Character[] {'A', 'B'})));
-		partition5.add(new ArrayList<>(Arrays.asList(new Character[] {'C'})));
-		partition5.add(new ArrayList<>(Arrays.asList(new Character[] {'D'})));
-		
-		partition6.add(new ArrayList<>(Arrays.asList(new Character[] {'A', 'C', 'D'})));
-		partition6.add(new ArrayList<>(Arrays.asList(new Character[] {'B'})));
-		
-		partition7.add(new ArrayList<>(Arrays.asList(new Character[] {'A', 'C'})));
-		partition7.add(new ArrayList<>(Arrays.asList(new Character[] {'B', 'D'})));
-		
-		partition8.add(new ArrayList<>(Arrays.asList(new Character[] {'A', 'C'})));
-		partition8.add(new ArrayList<>(Arrays.asList(new Character[] {'B'})));
-		partition8.add(new ArrayList<>(Arrays.asList(new Character[] {'D'})));
-		
-		partition9.add(new ArrayList<>(Arrays.asList(new Character[] {'A', 'D'})));
-		partition9.add(new ArrayList<>(Arrays.asList(new Character[] {'B', 'C'})));
-		
-		partition10.add(new ArrayList<>(Arrays.asList(new Character[] {'A'})));
-		partition10.add(new ArrayList<>(Arrays.asList(new Character[] {'B', 'C', 'D'})));
-		
-		partition11.add(new ArrayList<>(Arrays.asList(new Character[] {'A'})));
-		partition11.add(new ArrayList<>(Arrays.asList(new Character[] {'B', 'C'})));
-		partition11.add(new ArrayList<>(Arrays.asList(new Character[] {'D'})));
-		
-		partition12.add(new ArrayList<>(Arrays.asList(new Character[] {'A', 'D'})));
-		partition12.add(new ArrayList<>(Arrays.asList(new Character[] {'B'})));
-		partition12.add(new ArrayList<>(Arrays.asList(new Character[] {'C'})));
-		
-		partition13.add(new ArrayList<>(Arrays.asList(new Character[] {'A'})));
-		partition13.add(new ArrayList<>(Arrays.asList(new Character[] {'B', 'D'})));
-		partition13.add(new ArrayList<>(Arrays.asList(new Character[] {'C'})));
-		
-		partition14.add(new ArrayList<>(Arrays.asList(new Character[] {'A'})));
-		partition14.add(new ArrayList<>(Arrays.asList(new Character[] {'B'})));
-		partition14.add(new ArrayList<>(Arrays.asList(new Character[] {'C', 'D'})));
-		
-		partition15.add(new ArrayList<>(Arrays.asList(new Character[] {'A'})));
-		partition15.add(new ArrayList<>(Arrays.asList(new Character[] {'B'})));
-		partition15.add(new ArrayList<>(Arrays.asList(new Character[] {'C'})));
-		partition15.add(new ArrayList<>(Arrays.asList(new Character[] {'D'})));	
-		
+
+		partition1.add(new ArrayList<>(Arrays.asList(new Character[] { 'A', 'B', 'C', 'D' })));
+
+		partition2.add(new ArrayList<>(Arrays.asList(new Character[] { 'A', 'B', 'C' })));
+		partition2.add(new ArrayList<>(Arrays.asList(new Character[] { 'D' })));
+
+		partition3.add(new ArrayList<>(Arrays.asList(new Character[] { 'A', 'B', 'D' })));
+		partition3.add(new ArrayList<>(Arrays.asList(new Character[] { 'C' })));
+
+		partition4.add(new ArrayList<>(Arrays.asList(new Character[] { 'A', 'B' })));
+		partition4.add(new ArrayList<>(Arrays.asList(new Character[] { 'C', 'D' })));
+
+		partition5.add(new ArrayList<>(Arrays.asList(new Character[] { 'A', 'B' })));
+		partition5.add(new ArrayList<>(Arrays.asList(new Character[] { 'C' })));
+		partition5.add(new ArrayList<>(Arrays.asList(new Character[] { 'D' })));
+
+		partition6.add(new ArrayList<>(Arrays.asList(new Character[] { 'A', 'C', 'D' })));
+		partition6.add(new ArrayList<>(Arrays.asList(new Character[] { 'B' })));
+
+		partition7.add(new ArrayList<>(Arrays.asList(new Character[] { 'A', 'C' })));
+		partition7.add(new ArrayList<>(Arrays.asList(new Character[] { 'B', 'D' })));
+
+		partition8.add(new ArrayList<>(Arrays.asList(new Character[] { 'A', 'C' })));
+		partition8.add(new ArrayList<>(Arrays.asList(new Character[] { 'B' })));
+		partition8.add(new ArrayList<>(Arrays.asList(new Character[] { 'D' })));
+
+		partition9.add(new ArrayList<>(Arrays.asList(new Character[] { 'A', 'D' })));
+		partition9.add(new ArrayList<>(Arrays.asList(new Character[] { 'B', 'C' })));
+
+		partition10.add(new ArrayList<>(Arrays.asList(new Character[] { 'A' })));
+		partition10.add(new ArrayList<>(Arrays.asList(new Character[] { 'B', 'C', 'D' })));
+
+		partition11.add(new ArrayList<>(Arrays.asList(new Character[] { 'A' })));
+		partition11.add(new ArrayList<>(Arrays.asList(new Character[] { 'B', 'C' })));
+		partition11.add(new ArrayList<>(Arrays.asList(new Character[] { 'D' })));
+
+		partition12.add(new ArrayList<>(Arrays.asList(new Character[] { 'A', 'D' })));
+		partition12.add(new ArrayList<>(Arrays.asList(new Character[] { 'B' })));
+		partition12.add(new ArrayList<>(Arrays.asList(new Character[] { 'C' })));
+
+		partition13.add(new ArrayList<>(Arrays.asList(new Character[] { 'A' })));
+		partition13.add(new ArrayList<>(Arrays.asList(new Character[] { 'B', 'D' })));
+		partition13.add(new ArrayList<>(Arrays.asList(new Character[] { 'C' })));
+
+		partition14.add(new ArrayList<>(Arrays.asList(new Character[] { 'A' })));
+		partition14.add(new ArrayList<>(Arrays.asList(new Character[] { 'B' })));
+		partition14.add(new ArrayList<>(Arrays.asList(new Character[] { 'C', 'D' })));
+
+		partition15.add(new ArrayList<>(Arrays.asList(new Character[] { 'A' })));
+		partition15.add(new ArrayList<>(Arrays.asList(new Character[] { 'B' })));
+		partition15.add(new ArrayList<>(Arrays.asList(new Character[] { 'C' })));
+		partition15.add(new ArrayList<>(Arrays.asList(new Character[] { 'D' })));
+
 		partitions.add(partition1);
 		partitions.add(partition2);
 		partitions.add(partition3);
@@ -217,30 +208,30 @@ public class PartitionerTest {
 		partitions.add(partition13);
 		partitions.add(partition14);
 		partitions.add(partition15);
-		
+
 		return partitions;
 	}
-	
+
 	private boolean containsUnionAndAtoms(List<Character> unionOfAtoms, List<List<Character>> hierarchy) {
 		if (!hierarchy.contains(unionOfAtoms))
 			return false;
 		for (Character atom : unionOfAtoms) {
-			if (!hierarchy.contains(Arrays.asList(new Character[] {atom})))
+			if (!hierarchy.contains(Arrays.asList(new Character[] { atom })))
 				return false;
 		}
 		return true;
 	}
-	
+
 	private boolean containsUnionAndAtoms(Set<Character> unionOfAtoms, Set<Set<Character>> hierarchy) {
 		if (!hierarchy.contains(unionOfAtoms))
 			return false;
 		for (Character atom : unionOfAtoms) {
-			if (!hierarchy.contains(new HashSet<>(Arrays.asList(new Character[] {atom}))))
+			if (!hierarchy.contains(new HashSet<>(Arrays.asList(new Character[] { atom }))))
 				return false;
 		}
 		return true;
 	}
-	
+
 	private Set<Set<Set<Character>>> getHierarchiesAsSets(List<List<List<Character>>> hierarchiesAsLists) {
 		Set<Set<Set<Character>>> hierarchies = new HashSet<>();
 		for (List<List<Character>> hierarchyAsList : hierarchiesAsLists) {
@@ -251,23 +242,23 @@ public class PartitionerTest {
 		}
 		return hierarchies;
 	}
-	
+
 	private Set<Set<Set<Character>>> buildHierarchiesByDumbBruteForce(Set<Character> atoms) {
 		Set<Set<Set<Character>>> powerSetOfSubsets = buildPowerSetOfSubsets(buildPowerSetOfCharacters(atoms));
-		Set<Set<Set<Character>>> hierarchies =  powerSetOfSubsets.stream()
-				.filter(h -> containsUnionAndAtoms(atoms, h) 
+		Set<Set<Set<Character>>> hierarchies = powerSetOfSubsets.stream()
+				.filter(h -> containsUnionAndAtoms(atoms, h)
 						&& forEveryPairOfSubsetThenEitherOneIncludesTheOtherOrTheirIntersectionIsEmpty(h))
 				.collect(Collectors.toSet());
 		return hierarchies;
 	}
-	
+
 	private Set<Set<Set<Character>>> buildPowerSetOfSubsets(Set<Set<Character>> powerSet) {
 		List<Set<Character>> subsetList = new ArrayList<>(powerSet);
 		subsetList.remove(new HashSet<Character>());
 		Set<Set<Set<Character>>> powerSetOfSubsets = new HashSet<>();
-		for (int i = 0 ; i < (1 << subsetList.size()) ; i++) {
+		for (int i = 0; i < (1 << subsetList.size()); i++) {
 			Set<Set<Character>> setOfSubsets = new HashSet<>();
-			for (int j = 0 ; j < subsetList.size() ; j++) {
+			for (int j = 0; j < subsetList.size(); j++) {
 				if (((1 << j) & i) > 0)
 					setOfSubsets.add(subsetList.get(j));
 			}
@@ -275,19 +266,19 @@ public class PartitionerTest {
 		}
 		return powerSetOfSubsets;
 	}
-	
+
 	private Set<Set<Character>> buildPowerSetOfCharacters(Set<Character> characters) {
 		List<Character> charList = new ArrayList<>(characters);
-	    Set<Set<Character>> powerSet = new HashSet<Set<Character>>();
-	    for (int i = 0; i < (1 << charList.size()); i++) {
-	    	Set<Character> subset = new HashSet<Character>();
-	        for (int j = 0; j < charList.size(); j++) {
-	            if(((1 << j) & i) > 0)
-	            	subset.add(charList.get(j));
-	        }
-	        powerSet.add(subset);
-	    }
-	    return powerSet;
+		Set<Set<Character>> powerSet = new HashSet<>();
+		for (int i = 0; i < (1 << charList.size()); i++) {
+			Set<Character> subset = new HashSet<>();
+			for (int j = 0; j < charList.size(); j++) {
+				if (((1 << j) & i) > 0)
+					subset.add(charList.get(j));
+			}
+			powerSet.add(subset);
+		}
+		return powerSet;
 	}
 
 }
