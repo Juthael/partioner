@@ -11,38 +11,46 @@ import com.tregouet.partitioner.IPartitioner;
 
 public class ConstrainedPartitioner<T> extends Partitioner<T> implements IPartitioner<T> {
 
-	private List<List<T>> authorizedSubsets = new ArrayList<>();
+	private Set<List<T>> authorizedSubsets;
 	private Integer maxNbOfSubsets;
 
 	public ConstrainedPartitioner(Set<T> set, Set<Set<T>> authorizedSubsets, Integer maxNbOfSubsets) {
 		super(set);
 		Comparator<T> sorter = ((t1, t2) -> order.indexOf(t1) - order.indexOf(t2));
-		for (Set<T> subset : authorizedSubsets) {
-			List<T> sortedSubset = new ArrayList<>(subset);
-			Collections.sort(sortedSubset, sorter);
+		if (authorizedSubsets != null) {
+			this.authorizedSubsets = new HashSet<>();
+			for (Set<T> authorizedSubset : authorizedSubsets) {
+				List<T> authorizedSubsetList = new ArrayList<>(authorizedSubset);
+				Collections.sort(authorizedSubsetList, sorter);
+				this.authorizedSubsets.add(authorizedSubsetList);
+			}	
 		}
-		for (Set<T> authorizedSubset : authorizedSubsets) {
-			List<T> authorizedSubsetList = new ArrayList<>(authorizedSubset);
-			Collections.sort(authorizedSubsetList, sorter);
-			this.authorizedSubsets.add(authorizedSubsetList);
-			this.maxNbOfSubsets = maxNbOfSubsets;
-		}
+		this.maxNbOfSubsets = maxNbOfSubsets;
 	}
-
-	private ConstrainedPartitioner(Set<T> set, List<List<T>> authorizedSubsets, Integer maxNbOfSubsets) {
+	
+	/**
+	 * UNSAFE. The order over the set of elements must also be the order over every authorized subset.
+	 */
+	public ConstrainedPartitioner(List<T> set, Set<List<T>> authorizedSubsets, Integer maxNbOfSubsets) {
 		super(set);
 		this.authorizedSubsets = authorizedSubsets;
 		this.maxNbOfSubsets = maxNbOfSubsets;
-	}
+	}	
 
+	/**
+	 * UNSAFE. The order over the set of elements must also be the order over every authorized subset.
+	 */
 	private ConstrainedPartitioner(List<T> set, List<List<T>> authorizedSubsets, Integer maxNbOfSubsets) {
 		super(set);
-		this.authorizedSubsets = authorizedSubsets;
+		if (authorizedSubsets != null)
+			this.authorizedSubsets = new HashSet<>(authorizedSubsets);
 		this.maxNbOfSubsets = maxNbOfSubsets;
 	}
 
 	@Override
 	public List<List<List<T>>> getAllPartitions() {
+		if (authorizedSubsets == null)
+			return super.getAllPartitions();
 		List<List<List<T>>> partitions = new ArrayList<>();
 		boolean partitionIsValid;
 		List<List<T>> partition;
@@ -77,6 +85,8 @@ public class ConstrainedPartitioner<T> extends Partitioner<T> implements IPartit
 
 	@Override
 	public List<List<Set<T>>> getAllPartitionsAsListsOfSets() {
+		if (authorizedSubsets == null)
+			return super.getAllPartitionsAsListsOfSets();
 		List<List<Set<T>>> partitions = new ArrayList<>();
 		boolean partitionIsValid;
 		List<Set<T>> partition;
@@ -111,6 +121,8 @@ public class ConstrainedPartitioner<T> extends Partitioner<T> implements IPartit
 
 	@Override
 	protected IPartitioner<T> getNewPartitioner(Set<T> set) {
+		if (authorizedSubsets == null)
+			return super.getNewPartitioner(set);
 		List<List<T>> authorizedSubsets = new ArrayList<>();
 		for (List<T> authorized : this.authorizedSubsets) {
 			if (set.containsAll(authorized))
@@ -121,6 +133,8 @@ public class ConstrainedPartitioner<T> extends Partitioner<T> implements IPartit
 
 	@Override
 	protected IPartitioner<T> getNewPartitioner(List<T> setAsList) {
+		if (authorizedSubsets == null)
+			return super.getNewPartitioner(setAsList);
 		List<List<T>> authorizedSubsets = new ArrayList<>();
 		for (List<T> authorized : this.authorizedSubsets) {
 			if (setAsList.containsAll(authorized))

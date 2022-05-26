@@ -69,7 +69,7 @@ public class ConstrainedPartitionerTest {
 	@Test
 	public void whenPartitionNotContainedInSizeConstrainedPartitionThenHasForbiddenSize() {
 		boolean asExpected = true;
-		ConstrainedPartitioner<Character> constrainedPartitioner = new ConstrainedPartitioner<>(chars, powerSet,
+		ConstrainedPartitioner<Character> constrainedPartitioner = new ConstrainedPartitioner<>(chars, null,
 				maxSize);
 		List<List<List<Character>>> constrainedPartitions = constrainedPartitioner.getAllPartitions();
 		List<List<List<Character>>> rejectedPartitions = new ArrayList<>();
