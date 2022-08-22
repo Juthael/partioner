@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import com.tregouet.partitioner.IPartitioner;
 
 public class ConstrainedPartitioner<T> extends Partitioner<T> implements IPartitioner<T> {
@@ -31,7 +33,7 @@ public class ConstrainedPartitioner<T> extends Partitioner<T> implements IPartit
 	/**
 	 * UNSAFE. The order over the set of elements must also be the order over every authorized subset.
 	 */
-	public ConstrainedPartitioner(List<T> set, Set<List<T>> authorizedSubsets, Integer maxNbOfSubsets) {
+	public ConstrainedPartitioner(List<T> set, @Nullable Set<List<T>> authorizedSubsets, @Nullable Integer maxNbOfSubsets) {
 		super(set);
 		this.authorizedSubsets = authorizedSubsets;
 		this.maxNbOfSubsets = maxNbOfSubsets;

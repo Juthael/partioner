@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuite tests="0" failures="0" name="com.tregouet.partitioner.impl.PartitionerTest" time="0" errors="0" skipped="0">
+<testsuite tests="3" failures="0" name="com.tregouet.partitioner.impl.PartitionerTest" time="0.938" errors="0" skipped="0">
   <properties>
     <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
     <property name="java.vm.version" value="17.0.1+12-LTS-39"/>
@@ -25,9 +25,9 @@
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="user.variant" value=""/>
     <property name="os.name" value="Windows 10"/>
-    <property name="classworlds.conf" value="C:\Users\TREGOUET\eclipse-workspace\.metadata\.plugins\org.eclipse.m2e.launching\launches\m2conf1796316708023274040.tmp"/>
+    <property name="classworlds.conf" value="C:\Users\TREGOUET\eclipse-workspace\.metadata\.plugins\org.eclipse.m2e.launching\launches\m2conf12121351190581481997.tmp"/>
     <property name="sun.jnu.encoding" value="Cp1252"/>
-    <property name="java.library.path" value="C:\Program Files\Java\jdk-17.0.1\bin;C:\windows\Sun\Java\bin;C:\windows\system32;C:\windows;C:\Program Files\Common Files\Oracle\Java\javapath;C:\windows\system32;C:\windows;C:\windows\System32\Wbem;C:\windows\System32\WindowsPowerShell\v1.0\;C:\windows\System32\OpenSSH\;C:\Program Files\Java\jdk-17.0.1\bin;C:\Users\TREGOUET\AppData\Local\Microsoft\WindowsApps;C:\Users\TREGOUET\AppData\Local\GitHubDesktop\bin;C:\Users\TREGOUET\AppData\Local\Programs\MiKTeX\miktex\bin\x64\;."/>
+    <property name="java.library.path" value="C:\Program Files\Java\jdk-17.0.1\bin;C:\windows\Sun\Java\bin;C:\windows\system32;C:\windows;C:\Program Files\Common Files\Oracle\Java\javapath;C:\windows\system32;C:\windows;C:\windows\System32\Wbem;C:\windows\System32\WindowsPowerShell\v1.0\;C:\windows\System32\OpenSSH\;C:\Program Files\Java\jdk-17.0.1\bin;C:\Users\TREGOUET\AppData\Local\Microsoft\WindowsApps;C:\Users\TREGOUET\AppData\Local\GitHubDesktop\bin;C:\Users\TREGOUET\AppData\Local\Programs\MiKTeX\miktex\bin\x64\;C:\Users\TREGOUET\AppData\Local\Programs\Microsoft VS Code\bin;."/>
     <property name="jdk.debug" value="release"/>
     <property name="java.class.version" value="61.0"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
@@ -57,4 +57,7 @@
     <property name="sun.cpu.endian" value="little"/>
     <property name="sun.cpu.isalist" value="amd64"/>
   </properties>
+  <testcase classname="com.tregouet.partitioner.impl.PartitionerTest" name="whenHierarchiesRequestedThenReallyAreSpanningHierarchies" time="0.444"/>
+  <testcase classname="com.tregouet.partitioner.impl.PartitionerTest" name="whenHierarchiesRequestedThenExpectedReturned" time="0.494"/>
+  <testcase classname="com.tregouet.partitioner.impl.PartitionerTest" name="whenPartitionsRequestedThenExpectedReturned" time="0"/>
 </testsuite>
